@@ -1,16 +1,14 @@
-# This is a sample Python script.
+import cv2
+import numpy as np
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+model = cv2.imread("C:/Users/idil/PycharmProjects/icon_recog/images/f1_display.png")
+snowflake=cv2.imread("C:/Users/idil/PycharmProjects/icon_recog/images/snow_flake.png")
+model= cv2.cvtColor(model, cv2.COLOR_BGR2GRAY)
+snowflake= cv2.cvtColor(snowflake, cv2.COLOR_BGR2GRAY)
 
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
-
-
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+f1 = np.fft.fft2(model)
+f2 = np.fft.fft2(snowflake, (model.rows, model.cols))
+lp= cv2.ones(5)
+f_lp=np.fft.fft2(lp, (model.rows, model.cols))
+cv2.imshow(model)
+cv2.waitKey(0)
