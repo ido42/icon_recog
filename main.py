@@ -11,7 +11,7 @@ f2 = np.fft.fft2(snowflake, (model.rows, model.cols))
 lp= cv2.ones(5)
 f_lp=np.fft.fft2(lp, (model.rows, model.cols))
 
-cor = np.real(np.fft.ifft2(f3*f1*np.conj(f2)))/(row+179)/(col+269)
+cc = np.real(np.fft.ifft2(f_lp*f1*np.conj(f2)))
 
 cv2.imshow(model)
 cv2.waitKey(0)
