@@ -2,17 +2,23 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+def display(match):
+    fig = plt.figure(figsize=(12, 10))
+    ax = fig.add_subplot(1, 1, 1)
+    plt.imshow(match)
+    plt.show()
 
-model_img_dir= os.path.abspath(os.path.join(os.getcwd(), "..", "icon_recog", "images", "f1_display.PNG")).replace('\\', '/')
-snowflake_img_dir=os.path.abspath(os.path.join(os.getcwd(), "..", "icon_recog", "images", "snow_flake.PNG")).replace('\\', '/')
 
+model_img_dir = os.path.abspath(os.path.join(os.getcwd(), "..", "icon_recog", "images", "f1_display.PNG")).replace('\\', '/')
+snowflake_img_dir = os.path.abspath(os.path.join(os.getcwd(), "..", "icon_recog", "images", "snow_flake.PNG")).replace('\\', '/')
+seven_segment_dir = os.path.abspath(os.path.join(os.getcwd(), "..", "icon_recog", "images", "seven_segment.PNG")).replace('\\', '/')
 model = cv2.imread(model_img_dir)
 snowflake = cv2.imread(snowflake_img_dir)
 model_cp = cv2.cvtColor(model, cv2.COLOR_BGR2GRAY)
 snowflake_cp = cv2.cvtColor(snowflake, cv2.COLOR_BGR2GRAY)
 
 # straight forward template matching
-rows, cols,channels = model.shape
+rows, cols, channels = model.shape
 
 # the methods that can be used are cv2.TM_CCOEFF, cv2.TM_CCOEFF_NORMED, cv2.TM_CCORR, cv2.TM_SQDIFF etc.
 res = cv2.matchTemplate(model_cp, snowflake_cp, cv2.TM_CCOEFF)
@@ -33,18 +39,28 @@ cv2.imshow("found!", model)
 cv2.waitKey(0)
 
 # feature matching, brute force with orb descriptors
+seven_segment = cv2.imread(seven_segment_dir)
+seven_segment_cp=seven_segment.copy()
+
 orb = cv2.ORB_create()
-key_points1, descriptors1 = orb.detectAndCompute(snowflake_cp, None) # detecying key points and descriptors for model and template
+key_points1, descriptors1 = orb.detectAndCompute(seven_segment_cp, None) # detecying key points and descriptors for model and template
 key_points2, descriptors2 = orb.detectAndCompute(model_cp, None)
 brute_force = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
 matches = brute_force.match(descriptors1, descriptors2)
 matches = sorted(matches, key=lambda x: x.distance) # distance indicates similarity, here we sort them from most similar to least
-sf_match = cv2.drawMatches(snowflake_cp, key_points1, model_cp, key_points2, matches,None,flags=2)
+ss_match = cv2.drawMatches(seven_segment_cp, key_points1, model_cp, key_points2, matches[:10], None, flags=2)
+display(ss_match)
 
-fig=plt.figure(figsize=(12,10))
-ax=fig.add_subplot(1, 1, 1)
-plt.imshow(sf_match)
-plt.show()
+# sift matching
+sift = cv2.xfeatures2d.SIFT_create() # needs extra opencv-contrib files
+kp1_sift, des1_sift = sift.detectAndCompute(snowflake_cp, None)
+kp2_sift, des2_sift = sift.detectAndCompute(model_cp, None)
+sift_matches = brute_force.knnMatch(des1_sift, des2_sift, k=2)
+sf_match = cv2.drawMatchesKnn(snowflake_cp, kp1_sift, model_cp, kp2_sift, sift_matches[:10], None, flags=2)
+display(sf_match)
+
+
+
 # cv2.imshow("found", sf_match)
 # cv2.waitkey(0)
 """f1 = np.fft.fft2(model)
