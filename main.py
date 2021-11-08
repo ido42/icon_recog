@@ -6,8 +6,8 @@ import os
 model_img_dir= os.path.abspath(os.path.join(os.getcwd(), "..", "icon_recog", "images", "f1_display.PNG")).replace('\\', '/')
 snowflake_img_dir=os.path.abspath(os.path.join(os.getcwd(), "..", "icon_recog", "images", "snow_flake.PNG")).replace('\\', '/')
 
-model = cv2.imread("C:/Users/idil/PycharmProjects/icon_recog/images/f1_display.PNG")
-snowflake = cv2.imread("C:/Users/idil/PycharmProjects/icon_recog/images/snow_flake.png")
+model = cv2.imread(model_img_dir)
+snowflake = cv2.imread(snowflake_img_dir)
 model_cp = cv2.cvtColor(model, cv2.COLOR_BGR2GRAY)
 snowflake_cp = cv2.cvtColor(snowflake, cv2.COLOR_BGR2GRAY)
 
@@ -22,25 +22,31 @@ cv2.waitKey(0)
 min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
 row_temp, col_temp = snowflake_cp.shape
 bottom_right_loc = (max_loc[0]+col_temp, max_loc[1]+row_temp)
-cv2.rectangle(model,max_loc,bottom_right_loc,(255,0,0),5)
+cv2.rectangle(model, max_loc, bottom_right_loc, (255, 0, 0), 5)
+cv2.rectangle(res, max_loc, bottom_right_loc, 0, -1)
+cv2.imshow("heat map", res)
+cv2.waitKey(0)
+min_val2, max_val2, min_loc2, max_loc2 = cv2.minMaxLoc(res)
+bottom_right_loc2 = (max_loc2[0]+col_temp, max_loc2[1]+row_temp)
+cv2.rectangle(model, max_loc2, bottom_right_loc2, (0, 255, 0), 5)
 cv2.imshow("found!", model)
 cv2.waitKey(0)
 
-#feature matching, brute force with orb descriptors
+# feature matching, brute force with orb descriptors
 orb = cv2.ORB_create()
 key_points1, descriptors1 = orb.detectAndCompute(snowflake_cp, None) # detecying key points and descriptors for model and template
 key_points2, descriptors2 = orb.detectAndCompute(model_cp, None)
 brute_force = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
 matches = brute_force.match(descriptors1, descriptors2)
 matches = sorted(matches, key=lambda x: x.distance) # distance indicates similarity, here we sort them from most similar to least
-sf_match=cv2.drawMatches(snowflake_cp, key_points1,model_cp, key_points2, matches[:10],None,flags=2)
+sf_match = cv2.drawMatches(snowflake_cp, key_points1, model_cp, key_points2, matches,None,flags=2)
 
-fig=plt.figure()
-ax=fig.add_subplot(1,1,1)
+fig=plt.figure(figsize=(12,10))
+ax=fig.add_subplot(1, 1, 1)
 plt.imshow(sf_match)
 plt.show()
-#cv2.imshow("found", sf_match)
-#cv2.waitkey(0)
+# cv2.imshow("found", sf_match)
+# cv2.waitkey(0)
 """f1 = np.fft.fft2(model)
 f2 = np.fft.fft2(snowflake, (rows, cols))
 
