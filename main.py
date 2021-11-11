@@ -14,12 +14,18 @@ snowflake_img_dir = os.path.abspath(os.path.join(os.getcwd(), "..", "icon_recog"
 seven_segment_dir = os.path.abspath(os.path.join(os.getcwd(), "..", "icon_recog", "images", "seven_segment.PNG")).replace('\\', '/')
 model = cv2.imread(model_img_dir)
 snowflake = cv2.imread(snowflake_img_dir)
+
 model_cp = cv2.cvtColor(model, cv2.COLOR_BGR2GRAY)
 snowflake_cp = cv2.cvtColor(snowflake, cv2.COLOR_BGR2GRAY)
 
 # straight forward template matching
 rows, cols, channels = model.shape
 
+
+model_cp = cv2.GaussianBlur(model_cp, (5, 5), cv2.BORDER_DEFAULT)
+snowflake_cp = cv2.GaussianBlur(snowflake_cp, (5, 5), cv2.BORDER_DEFAULT)
+snow_canny=cv2.Canny(snowflake_cp, 100, 200)
+model_canny=cv2.Canny(model_cp, 100, 200)
 # the methods that can be used are cv2.TM_CCOEFF, cv2.TM_CCOEFF_NORMED, cv2.TM_CCORR, cv2.TM_SQDIFF etc.
 res = cv2.matchTemplate(model_cp, snowflake_cp, cv2.TM_CCOEFF)
 cv2.imshow("heat map", res)
@@ -52,13 +58,39 @@ ss_match = cv2.drawMatches(seven_segment_cp, key_points1, model_cp, key_points2,
 display(ss_match)
 
 # sift matching
-sift = cv2.xfeatures2d.SIFT_create() # needs extra opencv-contrib files
+sift = cv2.SIFT_create() # needs extra opencv-contrib files
+bf = cv2.BFMatcher(cv2.NORM_L2, crossCheck=True)
+
 kp1_sift, des1_sift = sift.detectAndCompute(snowflake_cp, None)
 kp2_sift, des2_sift = sift.detectAndCompute(model_cp, None)
-sift_matches = brute_force.knnMatch(des1_sift, des2_sift, k=2)
-sf_match = cv2.drawMatchesKnn(snowflake_cp, kp1_sift, model_cp, kp2_sift, sift_matches[:10], None, flags=2)
-display(sf_match)
+#sift_matches = bf.knnMatch(des1_sift, des2_sift, k=2)
+#sf_match = cv2.drawMatchesKnn(snowflake_cp, kp1_sift, model_cp, kp2_sift, sift_matches[:10], None, flags=2)
+#display(sf_match)
+# FLANN parameters
+FLANN_INDEX_KDTREE = 0
+index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
+search_params = dict(checks=50)   # or pass empty dictionary
 
+flann = cv2.FlannBasedMatcher(index_params,search_params)
+
+matches = flann.knnMatch(des1_sift,des2_sift,k=2)
+
+# Need to draw only good matches, so create a mask
+matchesMask = [[0,0] for i in range(len(matches))]
+
+# ratio test as per Lowe's paper
+for i,(m,n) in enumerate(matches):
+    if m.distance < 0.7*n.distance:
+        matchesMask[i]=[1,0]
+
+draw_params = dict(matchColor = (0,255,0),
+                   singlePointColor = (255,0,0),
+                   matchesMask = matchesMask,
+                   flags = 0)
+
+img3 = cv2.drawMatchesKnn(snowflake_cp,kp1_sift,model_cp,kp2_sift,matches,None,**draw_params)
+
+plt.imshow(img3,),plt.show()
 
 
 # cv2.imshow("found", sf_match)
