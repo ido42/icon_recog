@@ -30,6 +30,7 @@ cv2.imshow("real!", real_img)
 cv2.imshow("model!", model)
 cv2.imshow("sf!", sf)
 cv2.waitKey((0))
+
 sift_matching(real_img,sf)
 # straight forward template matching
 """

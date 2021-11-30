@@ -34,10 +34,12 @@ sf_cp = cv2.cvtColor(sf, cv2.COLOR_BGR2GRAY)
 
 def sift_matching(display_img, icon):
     # images in black and white
-    if display_img.shape[2] == 3: #if the image is not already bw, convert
-        display_img = cv2.cvtColor(display_img, cv2.COLOR_BGR2GRAY)
-    if icon.shape[2] == 3:  # if the image is not already bw, convert
-        icon = cv2.cvtColor(icon, cv2.COLOR_BGR2GRAY)
+    if len(display_img.shape) == 3:  # if the image is not already bw, convert
+        if display_img.shape[2] == 3:  # sometimes it looks like there are 3 elemnts of .shape but the last is 1, thus bw
+            display_img = cv2.cvtColor(display_img, cv2.COLOR_BGR2GRAY)
+    if len(icon.shape) == 3:
+        if icon.shape[2] == 3:
+            icon = cv2.cvtColor(icon, cv2.COLOR_BGR2GRAY)
 
     # first gaussian blur then canny edge detection on the images for reducing noise and focusing on edges
     display_gs = cv2.GaussianBlur(display_img, (3, 3), cv2.BORDER_DEFAULT)
@@ -46,12 +48,12 @@ def sift_matching(display_img, icon):
     icon_canny=cv2.Canny(icon_gs, 40, 100)
 
     # display images (just control)
-    cv2.imshow("real!", display_img)
-    cv2.imshow("sf!", icon)
+#    cv2.imshow("real!", display_img)
+#    cv2.imshow("sf!", icon)
 
-    cv2.imshow("real c", display_canny)
-    cv2.imshow("sf c", icon_canny)
-    cv2.waitKey((0))
+#    cv2.imshow("real c", display_canny)
+#    cv2.imshow("sf c", icon_canny)
+#    cv2.waitKey((0))
 
     sift = cv2.SIFT_create()  # needs extra opencv-contrib files (solved)
     bf = cv2.BFMatcher(cv2.NORM_L2, crossCheck=True)
@@ -79,5 +81,7 @@ def sift_matching(display_img, icon):
                        flags = 0)
 
     img3 = cv2.drawMatchesKnn(icon,kp1_sift,display_img,kp2_sift,matches,None,**draw_params)
-
-    plt.imshow(img3,),plt.show()
+   # cv2.imshow("",img3)
+   # cv2.waitKey(0)
+    return img3
+#    plt.imshow(img3,),plt.show()
