@@ -24,7 +24,7 @@ model_gs = cv2.GaussianBlur(model_cp, (5, 5), cv2.BORDER_DEFAULT)
 snowflake_gs = cv2.GaussianBlur(snowflake_cp, (5, 5), cv2.BORDER_DEFAULT)
 snow_canny=cv2.Canny(snowflake_gs, 100, 200)
 model_canny=cv2.Canny(model_gs, 100, 200)
-res = cv2.matchTemplate(model_cp, snowflake_cp, cv2.TM_CCOEFF)
+res = cv2.matchTemplate(model_canny, snow_canny, cv2.TM_CCOEFF)
 cv2.imshow("heat map", res)
 cv2.waitKey(0)
 

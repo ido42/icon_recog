@@ -14,8 +14,11 @@ lower_dir = os.path.abspath(os.path.join(os.getcwd(), "..", "icon_recog", "image
 timer_dir = os.path.abspath(os.path.join(os.getcwd(), "..", "icon_recog", "images", "timer.png")).replace('\\', '/')
 upper_dir = os.path.abspath(os.path.join(os.getcwd(), "..", "icon_recog", "images", "upper.jpg")).replace('\\', '/')
 wifi_dir = os.path.abspath(os.path.join(os.getcwd(), "..", "icon_recog", "images", "wifi.jpg")).replace('\\', '/')
-
-real_img_dir = os.path.abspath(os.path.join(os.getcwd(), "..", "icon_recog", "images", "wifi on cropped.jpeg")).replace('\\', '/')
+wifi_on="wifi on cropped.jpeg"
+wifi_off="f1_display_real_cropped.jpeg"
+ex1="ex1.jpeg"
+ex2="ex2.jpeg"
+real_img_dir = os.path.abspath(os.path.join(os.getcwd(), "..", "icon_recog", "images", wifi_off)).replace('\\', '/')
 model_img_dir = os.path.abspath(os.path.join(os.getcwd(), "..", "icon_recog", "images", "f1.jpg")).replace('\\', '/')
 model = cv2.imread(model_img_dir)
 real_img = cv2.imread(real_img_dir)
@@ -35,14 +38,17 @@ cv2.waitKey((0))
 model_cp = cv2.cvtColor(model, cv2.COLOR_BGR2GRAY)
 real_cp = cv2.cvtColor(real_img, cv2.COLOR_BGR2GRAY)
 real_gs = cv2.GaussianBlur(real_cp, (5, 5), cv2.BORDER_DEFAULT)
-
-real_canny=cv2.Canny(real_gs, 100, 200)
+model_gs = cv2.GaussianBlur(model_cp, (5, 5), cv2.BORDER_DEFAULT)
+model_canny=cv2.Canny(model_gs, 50, 100)
+real_canny=cv2.Canny(real_gs, 50, 100)
 for icon in range(len(icons_dir)):
     ic = cv2.imread(icons_dir[icon])
     ic_cp = cv2.cvtColor(ic, cv2.COLOR_BGR2GRAY)
     ic_gs = cv2.GaussianBlur(ic_cp, (5, 5), cv2.BORDER_DEFAULT)
-    ic_canny=cv2.Canny(ic_gs, 100, 200)
-    res = cv2.matchTemplate(model_cp, ic_cp, cv2.TM_CCOEFF)
+    ic_canny=cv2.Canny(ic_gs, 50, 100)
+    cv2.imshow("icon", ic_canny)
+    cv2.waitKey(0)
+    res = cv2.matchTemplate(model_canny, ic_canny, cv2.TM_CCOEFF)
     cv2.imshow("heat map", res)
     cv2.waitKey(0)
     min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
@@ -68,14 +74,40 @@ resw = cv2.matchTemplate(model_cp, w_cp, cv2.TM_CCOEFF)
 min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(resw)
 row_temp, col_temp = w_cp.shape
 bottom_right_loc = (max_loc[0]+col_temp, max_loc[1]+row_temp)
-cropped_image = model_cp[max_loc[0]:bottom_right_loc[0], max_loc[1]:bottom_right_loc[1]]
+cropped_image = model[max_loc[0]:bottom_right_loc[0], max_loc[1]:bottom_right_loc[1]]
 cv2.imshow("w map", cropped_image)
 cv2.waitKey(0)
-cropped_real = real_cp[max_loc[0]:bottom_right_loc[0], max_loc[1]:bottom_right_loc[1]]
+cropped_real = real_img[max_loc[0]:bottom_right_loc[0], max_loc[1]:bottom_right_loc[1]]
 cv2.imshow("w map", cropped_real)
 cv2.waitKey(0)
 
-orb = cv2.ORB_create()
+w_dir = os.path.abspath(os.path.join(os.getcwd(), "..", "icon_recog", "images", "wifi icon.jpeg")).replace('\\', '/')
+w=cv2.imread(w_dir)
+img1_hsv = cv2.cvtColor(w, cv2.COLOR_BGR2HSV)
+img2_hsv = cv2.cvtColor(cropped_real, cv2.COLOR_BGR2HSV)
+hist_img1 = cv2.calcHist([img1_hsv], [0, 1], None, [180, 256], [0, 180, 0, 256])
+cv2.normalize(hist_img1, hist_img1, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX);
+hist_img2 = cv2.calcHist([img2_hsv], [0, 1], None, [180, 256], [0, 180, 0, 256])
+cv2.normalize(hist_img2, hist_img2, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX);
+
+# find the metric value
+metric_val = cv2.compareHist(hist_img1, hist_img2, cv2.HISTCMP_CORREL)
+print(metric_val)
+if metric_val>0.5:
+    text="wifi on"
+else:
+    text="wifi off"
+cv2.putText(
+    real_img,  # numpy array on which text is written
+    text,  # text
+    (max_loc[0],max_loc[1]),  # position at which writing has to start
+    cv2.FONT_HERSHEY_SIMPLEX,  # font family
+    0.5,  # font size
+    (209, 80, 255, 0),  # font color
+    2)  # font stroke
+cv2.imshow("found!", real_img)
+cv2.waitKey((0))
+"""orb = cv2.ORB_create()
 cropped_image = cv2.Canny(cropped_image, 100, 200)
 cropped_real = cv2.Canny(cropped_real, 100, 200)
 
@@ -86,7 +118,7 @@ matches = brute_force.match(descriptors1, descriptors2)
 if len(matches)==0:
     print("off")
 else: print("on")
-"""for icon in icons_dir:
+for icon in icons_dir:
     ic=cv2.imread(icon)
 
     ic_cp = cv2.cvtColor(ic, cv2.COLOR_BGR2GRAY)
