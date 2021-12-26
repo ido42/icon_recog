@@ -76,11 +76,6 @@ print("\n",np.exp((rotation_and_scale[0][0])))
 cv2.imshow("mod", log_f1)
 cv2.imshow("snow", log_f2)
 cv2.waitKey(0)
-#res = cv2.matchTemplate(model, snowflake, cv2.TM_CCOEFF_NORMED)
-#cv2.imshow("heat map", res)
-#cv2.waitKey(0)
-#min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
-#print(max_loc)
 
 fft_log1=np.fft.fft2(log_f1)
 fft_log2=np.fft.fft2(log_f2)
@@ -106,5 +101,3 @@ min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(np.abs(res_inv))
 print((max_loc[1])/res_inv.shape[1]*360,",",np.exp(max_loc[0]/res_inv.shape[0]))"""
 """
 print(np.exp(max_loc[1]/log_f1.shape[1]))"""
-
-

@@ -41,18 +41,15 @@ def highpass(r,c):
 def logpol(src):
     radii = src.shape[1]
     angles = src.shape[0]
-
     center = (round(radii / 2), round(angles/ 2))
-
     d = np.sqrt((radii - center[0])**2 + (angles - center[1])**2)
     log_base = pow(10.0, np.log10(d) / radii)
     d_theta = math.pi / angles
     theta = math.pi / 2.0
     radius = 0
-    map_x = np.zeros(np.shape(src))
-    map_y = np.zeros(np.shape(src))
+    map_x = np.zeros(np.shape(src),np.float32)
+    map_y = np.zeros(np.shape(src),np.float32)
     for i in range(angles):
-
         for j in range(radii):
             radius = pow(log_base, j)
             x = radius * math.sin(theta) + center[0]
@@ -62,13 +59,14 @@ def logpol(src):
 
         theta += d_theta
 
+
     dst = cv2.remap(src, map_x, map_y, cv2.INTER_LINEAR)
     return dst, log_base
 
 model_img_dir = os.path.abspath(os.path.join(os.getcwd(), "..", "icon_recog", "images", "f1_display_real_cropped.jpeg")).replace('\\', '/')
 snowflake_img_dir = os.path.abspath(os.path.join(os.getcwd(), "..", "icon_recog", "images","buttons", "snow_flake.png")).replace('\\', '/')
 model = cv2.imread(model_img_dir)
-scale_percent = 0.36  # percent of original size
+scale_percent = 0.36   # percent of original size
 width = int(model.shape[1] * scale_percent)
 height = int(model.shape[0] * scale_percent)
 dim = (width, height)
@@ -83,7 +81,7 @@ scale_percent = 1.2  # percent of original size
 w = int(snowflake_cp.shape[1] * scale_percent)
 h = int(snowflake_cp.shape[0] * scale_percent)
 dim = (w, h)
-M = cv2.getRotationMatrix2D((w/2, h/2), 5, 1.0)
+M = cv2.getRotationMatrix2D((w/2, h/2), 180, 1.0)
 snowflake_cp = cv2.warpAffine(snowflake_cp, M, (width, height))
 
 snowflake_cp = np.float32(snowflake_cp)/255
@@ -115,11 +113,12 @@ value2 = np.sqrt(((h_mag2.shape[0]/2.0)**2.0)+((h_mag2.shape[1]/2.0)**2.0))
 
 log_f1 = cv2.warpPolar(h_mag1,(h_mag1.shape[0], h_mag1.shape[1]), (h_mag1.shape[0]/2, h_mag1.shape[1]/2), value1,cv2.INTER_LINEAR + cv2.WARP_FILL_OUTLIERS+ cv2.WARP_POLAR_LOG)
 log_f2 = cv2.warpPolar(h_mag2,(h_mag2.shape[0], h_mag2.shape[1]), (h_mag2.shape[0]/2, h_mag2.shape[1]/2), value2,cv2.INTER_LINEAR + cv2.WARP_FILL_OUTLIERS+ cv2.WARP_POLAR_LOG)
-#log_f1, l1 = logpol(h_mag1)
-#log_f2, l2 = logpol(h_mag2)
+log_f1, l1 = logpol(h_mag1)
+log_f2, l2 = logpol(h_mag2)
+
 rotation_and_scale = cv2.phaseCorrelate(log_f2, log_f1)
 print(rotation_and_scale[0][1]/log_f1.shape[1]*180, "\n")
-print(np.exp(rotation_and_scale[0][0]/log_f1.shape[0]))
+print(pow(l2,rotation_and_scale[0][0]/log_f1.shape[0]))
 
 """
 # here i just test some of the functions, not really an important file

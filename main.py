@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sift import *
 from sklearn.cluster import KMeans
+from display import *
 
 # here the algorithm works for stationary images
 # also at the end the old methods still exists for future reference
@@ -23,7 +24,7 @@ real_img = cv2.imread(real_img_dir)
 sf = cv2.imread(snowflake_img_dir)
 
 # scale the real image to the image of the model image (0.36 is their approx. ratio)
-scale_percent = 0.9 # percent of original size (works in range 0.26 to 1.5)
+scale_percent = 0.9  # percent of original size (works in range 0.26 to 1.5)
 width = int(real_img.shape[1] * scale_percent)
 height = int(real_img.shape[0] * scale_percent)
 dim = (width, height)
@@ -35,8 +36,9 @@ cv2.imshow("model!", model)
 cv2.imshow("sf!", sf)
 cv2.waitKey((0))
 
-im,l1,l2=sift_matching(real_img,sf)
-cv2.imshow("matched",im)
+
+im,l1,l2=sift_matching(real_img, sf)
+cv2.imshow("matched", im)
 cv2.waitKey(0)
 kmeans = KMeans(2)
 kmeans.fit(l2)
@@ -48,7 +50,7 @@ for ix in range(len(l2)):
         cv2.circle(real_img, l2[ix], 3, red, -1)
     else:
         cv2.circle(real_img, l2[ix], 3, green, -1)
-cv2.imshow("b",real_img)
+cv2.imshow("b", real_img)
 cv2.waitKey(0)
 """
 try:

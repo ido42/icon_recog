@@ -3,6 +3,7 @@ import cv2 as cv
 import os
 from sift import *
 from sklearn.cluster import KMeans
+from display import *
 
 # here everything so far works in the form of video, yay!
 video_dir = os.path.abspath(os.path.join(os.getcwd(), "..", "icon_recog", "images", "try.mp4")).replace('\\', '/')
@@ -47,6 +48,7 @@ while cap.isOpened():
     matched_w, w1, w2 = sift_matching(gray, wifi)
 
     # find the display
+
     res = cv2.matchTemplate(i_canny, t_canny, cv2.TM_CCOEFF)
     cv2.imshow("heat map", res)
 
