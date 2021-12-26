@@ -3,6 +3,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 
+# in this file template matching is used  for every icon to match them to real image but also utilizing the template
+# it is not very robust, i dont think we will use this methods im the future
+# however gaussian blur +canny edge gives quite good results
+
 def display(match):
     fig = plt.figure(figsize=(12, 10))
     ax = fig.add_subplot(1, 1, 1)
