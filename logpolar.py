@@ -49,8 +49,8 @@ def logpol(src):
     d_theta = math.pi / angles
     theta = math.pi / 2.0
     radius = 0
-    map_x=np.zeros(np.shape(src))
-    map_y=np.zeros(np.shape(src))
+    map_x = np.zeros(np.shape(src))
+    map_y = np.zeros(np.shape(src))
     for i in range(angles):
 
         for j in range(radii):
